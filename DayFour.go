@@ -16,12 +16,11 @@ Other than the range rule, the following are true:
 111111 meets these criteria (double 11, never decreases).
 223450 does not meet these criteria (decreasing pair of digits 50).
 123789 does not meet these criteria (no double).
-
 How many different passwords within the range given in your puzzle input meet these criteria?
-
 */
 
 func DayFourPartOne() {
+
 	fmt.Println("2019 - Day Four - Part One")
 
 	example1 := "111111"
@@ -38,9 +37,30 @@ func DayFourPartOne() {
 	validCount := 0
 
 	for i := minValue; i <= maxValue; i++ {
+
 		password := strconv.Itoa(i)
 
 		if isValid(password) {
+			validCount++
+		}
+	}
+
+	fmt.Println("Valid Password Count: ", validCount)
+}
+
+func DayFourPartTwo() {
+
+	fmt.Println("2019 - Day Four - Part Two")
+
+	minValue := 168630
+	maxValue := 718098
+
+	validCount := 0
+
+	for i := minValue; i <= maxValue; i++ {
+		password := strconv.Itoa(i)
+
+		if isValidPartTwo(password) {
 			validCount++
 		}
 	}
@@ -67,11 +87,31 @@ func isValid(password string) bool {
 	return isValid
 }
 
+func isValidPartTwo(password string) bool {
+
+	isValid := true
+
+	if !isSixDigits(password) {
+		isValid = false
+	}
+
+	if !hasTwoSameCharactersNoMore(password) {
+		isValid = false
+	}
+
+	if !hasNoDescreasingValues(password) {
+		isValid = false
+	}
+
+	return isValid
+}
+
 func isSixDigits(password string) bool {
 
 	if len(password) != 6 {
 		return false
 	}
+
 	return true
 }
 
@@ -86,16 +126,49 @@ func isWithinRange(password string, min, max int) bool {
 	return false
 }
 
+func hasTwoSameCharactersNoMore(password string) bool {
+
+	valid := false
+
+	for i := 0; i < len(password)-1; i++ {
+		if password[i] == password[i+1] {
+
+			doubleChar := true
+
+			prvChar := false
+			nxtChar := false
+
+			if i < len(password)-2 {
+				if password[i+1] == password[i+2] {
+					nxtChar = true
+				}
+			}
+
+			if i > 0 {
+				if password[i] == password[i-1] {
+					prvChar = true
+				}
+			}
+
+			if doubleChar && !prvChar && !nxtChar {
+				valid = true
+			}
+		}
+	}
+
+	return valid
+}
+
 func hasTwoSameCharacters(password string) bool {
 
 	valid := false
 
 	for i := 0; i < len(password)-1; i++ {
-
 		if password[i] == password[i+1] {
 			valid = true
 		}
 	}
+
 	return valid
 }
 
@@ -111,5 +184,6 @@ func hasNoDescreasingValues(password string) bool {
 			valid = false
 		}
 	}
+
 	return valid
 }
