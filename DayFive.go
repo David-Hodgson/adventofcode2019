@@ -14,7 +14,6 @@ func DayFivePartOne() {
 	fmt.Println("2019 - Day Five - Part One")
 
 	input := strings.Split(ReadFile("day5-2019-input.txt"), ",")
-
 	program := make([]int, len(input))
 
 	for i := 0; i < len(input); i++ {
@@ -37,7 +36,6 @@ func runProgram(program []int) {
 
 		opcode := instruction % 100
 		paramModes := instruction / 100
-		pcInc := 4
 		switch opcode {
 		case 1: //Add two numbers
 			readOne := program[pc+1]
@@ -47,7 +45,7 @@ func runProgram(program []int) {
 			write := program[pc+3]
 
 			program[write] = getValue(readOne, pmOne, program) + getValue(readTwo, pmTwo, program)
-			pcInc = 4
+			pc += 4
 		case 2:
 			readOne := program[pc+1]
 			pmOne := getParameterMode(paramModes, 0)
@@ -56,7 +54,7 @@ func runProgram(program []int) {
 			write := program[pc+3]
 
 			program[write] = getValue(readOne, pmOne, program) * getValue(readTwo, pmTwo, program)
-			pcInc = 4
+			pc += 4
 		case 3:
 			fmt.Println("Input:")
 			reader := bufio.NewReader(os.Stdin)
@@ -65,13 +63,69 @@ func runProgram(program []int) {
 			param := program[pc+1]
 
 			program[param] = value
-			pcInc = 2
+			pc += 2
 		case 4:
 			param := program[pc+1]
 			pmMode := getParameterMode(paramModes, 0)
 			value := getValue(param, pmMode, program)
 			fmt.Println("Output: ", value)
-			pcInc = 2
+			pc += 2
+		case 5:
+			p1 := program[pc+1]
+			pmMode1 := getParameterMode(paramModes, 0)
+			p2 := program[pc+2]
+			pmMode2 := getParameterMode(paramModes, 1)
+			v1 := getValue(p1, pmMode1, program)
+			v2 := getValue(p2, pmMode2, program)
+
+			if v1 != 0 {
+				pc = v2
+			} else {
+				pc += 3
+			}
+		case 6:
+			p1 := program[pc+1]
+			pmMode1 := getParameterMode(paramModes, 0)
+			p2 := program[pc+2]
+			pmMode2 := getParameterMode(paramModes, 1)
+			v1 := getValue(p1, pmMode1, program)
+			v2 := getValue(p2, pmMode2, program)
+
+			if v1 == 0 {
+				pc = v2
+			} else {
+				pc += 3
+			}
+		case 7:
+			p1 := program[pc+1]
+			pmMode1 := getParameterMode(paramModes, 0)
+			p2 := program[pc+2]
+			pmMode2 := getParameterMode(paramModes, 1)
+			p3 := program[pc+3]
+			v1 := getValue(p1, pmMode1, program)
+			v2 := getValue(p2, pmMode2, program)
+
+			if v1 < v2 {
+				program[p3] = 1
+			} else {
+				program[p3] = 0
+			}
+			pc += 4
+		case 8:
+			p1 := program[pc+1]
+			pmMode1 := getParameterMode(paramModes, 0)
+			p2 := program[pc+2]
+			pmMode2 := getParameterMode(paramModes, 1)
+			p3 := program[pc+3]
+			v1 := getValue(p1, pmMode1, program)
+			v2 := getValue(p2, pmMode2, program)
+
+			if v1 == v2 {
+				program[p3] = 1
+			} else {
+				program[p3] = 0
+			}
+			pc += 4
 		case 99:
 			fmt.Println("Halt")
 			halt = true
@@ -80,7 +134,6 @@ func runProgram(program []int) {
 			halt = true
 		}
 
-		pc += pcInc
 	}
 }
 
