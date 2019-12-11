@@ -21,8 +21,6 @@ func DaySixPartTwo() {
 	tree := buildTree(input)
 
 	depthMap := buildDepthMap(tree, "COM", 0)
-	youDepth := depthMap["YOU"]
-	sanDepth := depthMap["SAN"]
 	pathCount := generatePathCount(tree, depthMap, "YOU", "SAN")
 	fmt.Println("Path Count: ", pathCount)
 }
