@@ -162,7 +162,7 @@ func d7RunProgram(program *ampController) (int, bool) {
 			pmTwo := d7getParameterMode(paramModes, 1)
 			write := program.instructions[program.pc+3]
 
-			program.instructions[write] = d7GetValue(readOne, pmOne, program.instructions) + getValue(readTwo, pmTwo, program.instructions)
+			program.instructions[write] = d7GetValue(readOne, pmOne, program.instructions) + d7GetValue(readTwo, pmTwo, program.instructions)
 			program.pc += 4
 		case 2:
 			readOne := program.instructions[program.pc+1]
@@ -171,7 +171,7 @@ func d7RunProgram(program *ampController) (int, bool) {
 			pmTwo := d7getParameterMode(paramModes, 1)
 			write := program.instructions[program.pc+3]
 
-			program.instructions[write] = d7GetValue(readOne, pmOne, program.instructions) * getValue(readTwo, pmTwo, program.instructions)
+			program.instructions[write] = d7GetValue(readOne, pmOne, program.instructions) * d7GetValue(readTwo, pmTwo, program.instructions)
 			program.pc += 4
 		case 3:
 

@@ -8,34 +8,42 @@ import (
 	"strconv"
 )
 
-func runProgram(program []int) {
+func runProgram(program []int64) {
 
 	halt := false
+	relativeBase := int64(0)
 
-	for pc := 0; !halt; {
+	for pc := int64(0); !halt; {
 
 		instruction := program[pc]
 
 		opcode := instruction % 100
 		paramModes := instruction / 100
+
 		switch opcode {
 		case 1: //Add two numbers
 			readOne := program[pc+1]
 			pmOne := getParameterMode(paramModes, 0)
 			readTwo := program[pc+2]
 			pmTwo := getParameterMode(paramModes, 1)
+
+			pmThree := getParameterMode(paramModes, 2)
+
 			write := program[pc+3]
 
-			program[write] = getValue(readOne, pmOne, program) + getValue(readTwo, pmTwo, program)
+			value := getValue(readOne, pmOne, relativeBase, program) + getValue(readTwo, pmTwo, relativeBase, program)
+			setValue(value, write, pmThree, relativeBase, program)
 			pc += 4
 		case 2:
 			readOne := program[pc+1]
 			pmOne := getParameterMode(paramModes, 0)
 			readTwo := program[pc+2]
 			pmTwo := getParameterMode(paramModes, 1)
+			pmThree := getParameterMode(paramModes, 2)
 			write := program[pc+3]
 
-			program[write] = getValue(readOne, pmOne, program) * getValue(readTwo, pmTwo, program)
+			value := getValue(readOne, pmOne, relativeBase, program) * getValue(readTwo, pmTwo, relativeBase, program)
+			setValue(value, write, pmThree, relativeBase, program)
 			pc += 4
 		case 3:
 			fmt.Println("Input:")
@@ -44,12 +52,13 @@ func runProgram(program []int) {
 			value, _ := strconv.Atoi(string(char))
 			param := program[pc+1]
 
-			program[param] = value
+			paramMode := getParameterMode(paramModes, 0)
+			setValue(int64(value), param, paramMode, relativeBase, program)
 			pc += 2
 		case 4:
 			param := program[pc+1]
 			pmMode := getParameterMode(paramModes, 0)
-			value := getValue(param, pmMode, program)
+			value := getValue(param, pmMode, relativeBase, program)
 			fmt.Println("Output: ", value)
 			pc += 2
 		case 5:
@@ -57,8 +66,8 @@ func runProgram(program []int) {
 			pmMode1 := getParameterMode(paramModes, 0)
 			p2 := program[pc+2]
 			pmMode2 := getParameterMode(paramModes, 1)
-			v1 := getValue(p1, pmMode1, program)
-			v2 := getValue(p2, pmMode2, program)
+			v1 := getValue(p1, pmMode1, relativeBase, program)
+			v2 := getValue(p2, pmMode2, relativeBase, program)
 
 			if v1 != 0 {
 				pc = v2
@@ -70,8 +79,8 @@ func runProgram(program []int) {
 			pmMode1 := getParameterMode(paramModes, 0)
 			p2 := program[pc+2]
 			pmMode2 := getParameterMode(paramModes, 1)
-			v1 := getValue(p1, pmMode1, program)
-			v2 := getValue(p2, pmMode2, program)
+			v1 := getValue(p1, pmMode1, relativeBase, program)
+			v2 := getValue(p2, pmMode2, relativeBase, program)
 
 			if v1 == 0 {
 				pc = v2
@@ -84,13 +93,16 @@ func runProgram(program []int) {
 			p2 := program[pc+2]
 			pmMode2 := getParameterMode(paramModes, 1)
 			p3 := program[pc+3]
-			v1 := getValue(p1, pmMode1, program)
-			v2 := getValue(p2, pmMode2, program)
+
+			pmMode3 := getParameterMode(paramModes, 2)
+
+			v1 := getValue(p1, pmMode1, relativeBase, program)
+			v2 := getValue(p2, pmMode2, relativeBase, program)
 
 			if v1 < v2 {
-				program[p3] = 1
+				setValue(1, p3, pmMode3, relativeBase, program)
 			} else {
-				program[p3] = 0
+				setValue(0, p3, pmMode3, relativeBase, program)
 			}
 			pc += 4
 		case 8:
@@ -99,15 +111,24 @@ func runProgram(program []int) {
 			p2 := program[pc+2]
 			pmMode2 := getParameterMode(paramModes, 1)
 			p3 := program[pc+3]
-			v1 := getValue(p1, pmMode1, program)
-			v2 := getValue(p2, pmMode2, program)
+
+			pmThree := getParameterMode(paramModes, 2)
+			v1 := getValue(p1, pmMode1, relativeBase, program)
+			v2 := getValue(p2, pmMode2, relativeBase, program)
 
 			if v1 == v2 {
-				program[p3] = 1
+				setValue(1, p3, pmThree, relativeBase, program)
 			} else {
-				program[p3] = 0
+				setValue(0, p3, pmThree, relativeBase, program)
 			}
 			pc += 4
+		case 9:
+			p1 := program[pc+1]
+			pmMode1 := getParameterMode(paramModes, 0)
+			v1 := getValue(p1, pmMode1, relativeBase, program)
+			relativeBase = relativeBase + v1
+
+			pc += 2
 		case 99:
 			fmt.Println("Halt")
 			halt = true
@@ -119,17 +140,17 @@ func runProgram(program []int) {
 	}
 }
 
-func getParameterMode(paramModes int, param int) int {
+func getParameterMode(paramModes int64, param int64) int64 {
 
 	value := paramModes
 
 	if param > 0 {
-		value = value / int(math.Pow10(param))
+		value = value / int64(math.Pow10(int(param)))
 	}
 	return value % 10
 }
 
-func getValue(index int, mode int, programMemory []int) int {
+func getValue(index int64, mode int64, relativeBase int64, programMemory []int64) int64 {
 
 	if mode == 0 {
 		//position mode
@@ -141,5 +162,20 @@ func getValue(index int, mode int, programMemory []int) int {
 		return index
 	}
 
+	if mode == 2 {
+		//relative mode
+		return programMemory[index+relativeBase]
+	}
 	return -1
+}
+
+func setValue(value int64, index int64, mode int64, relativeBase int64, programMemory []int64) {
+	if mode == 0 {
+		//position mode
+		programMemory[index] = value
+	}
+
+	if mode == 2 {
+		programMemory[index+relativeBase] = value
+	}
 }
