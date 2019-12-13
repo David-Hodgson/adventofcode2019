@@ -8,10 +8,11 @@ import (
 	"strconv"
 )
 
-func runProgram(program []int64) {
+func runProgram(program []int64) []int64 {
 
 	halt := false
 	relativeBase := int64(0)
+	output := []int64{}
 
 	for pc := int64(0); !halt; {
 
@@ -59,7 +60,13 @@ func runProgram(program []int64) {
 			param := program[pc+1]
 			pmMode := getParameterMode(paramModes, 0)
 			value := getValue(param, pmMode, relativeBase, program)
-			fmt.Println("Output: ", value)
+			if output == nil {
+				fmt.Println("Output: ", value)
+			} else {
+				output = append(output,value)
+			}
+
+
 			pc += 2
 		case 5:
 			p1 := program[pc+1]
@@ -138,6 +145,8 @@ func runProgram(program []int64) {
 		}
 
 	}
+
+	return output
 }
 
 func getParameterMode(paramModes int64, param int64) int64 {
