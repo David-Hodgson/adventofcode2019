@@ -8,8 +8,9 @@ import (
 	"strconv"
 )
 
-func runProgram(program []int64) []int64 {
+func runProgramViaCallBack(program []int64, inputCallback func()int64, outputCallback func(int64)) []int64 {
 
+	fmt.Println("Running")
 	halt := false
 	relativeBase := int64(0)
 	output := []int64{}
@@ -47,26 +48,18 @@ func runProgram(program []int64) []int64 {
 			setValue(value, write, pmThree, relativeBase, program)
 			pc += 4
 		case 3:
-			fmt.Println("Input:")
-			reader := bufio.NewReader(os.Stdin)
-			char, _, _ := reader.ReadRune()
-			value, _ := strconv.Atoi(string(char))
-			param := program[pc+1]
+			value := inputCallback()
 
+			param := program[pc+1]
 			paramMode := getParameterMode(paramModes, 0)
-			setValue(int64(value), param, paramMode, relativeBase, program)
+			setValue(value, param, paramMode, relativeBase, program)
 			pc += 2
 		case 4:
 			param := program[pc+1]
 			pmMode := getParameterMode(paramModes, 0)
 			value := getValue(param, pmMode, relativeBase, program)
-			if output == nil {
-				fmt.Println("Output: ", value)
-			} else {
-				output = append(output,value)
-			}
 
-
+			outputCallback(value)
 			pc += 2
 		case 5:
 			p1 := program[pc+1]
@@ -145,7 +138,33 @@ func runProgram(program []int64) []int64 {
 		}
 
 	}
+	return output
+}
 
+
+func runProgram(program []int64) []int64 {
+
+	inputCallback := func() int64 {
+		fmt.Println("Input:")
+		reader := bufio.NewReader(os.Stdin)
+		char, _, _ := reader.ReadRune()
+		value, _ := strconv.Atoi(string(char))
+
+		return int64(value)
+	}
+
+	
+	output := []int64{}
+	outputCallback := func(outputValue int64) {
+		if output == nil {
+			fmt.Println("Output: ", outputValue)
+		} else {
+			output = append(output,outputValue)
+		}
+
+	}
+
+	runProgramViaCallBack(program,inputCallback,outputCallback)
 	return output
 }
 
