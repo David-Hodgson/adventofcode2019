@@ -46,10 +46,12 @@ func DayElvenPartOne() {
 	}
 
 	paintMode := true
+	
 	outputCallback := func(outputValue int64) {
 			if paintMode {
 				robotLocation := point2d{robot.x,robot.y}
 				hull[robotLocation] = int64(outputValue)
+				
 			} else {
 				newDirection := -1
 				if outputValue ==0 {
